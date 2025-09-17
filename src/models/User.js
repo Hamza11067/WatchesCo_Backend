@@ -57,11 +57,15 @@ const userSchema = new Schema({
     type: String,
     trim: true,
     default:
-      "https://med.gov.bz/wp-content/uploads/2020/08/dummy-profile-pic.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s",
     validate() {
       if (!validator.isURL(this.photoUrl)) {
         throw new Error("Invalid URL format for photo");
       }
     },
   },
-});
+}, { timestamps: true });
+
+const User = mongoose.model("User", userSchema);
+
+module.exports = User;
