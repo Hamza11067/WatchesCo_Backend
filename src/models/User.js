@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const validator = require("validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 const userSchema = new Schema({
   firstName: {
@@ -39,32 +41,20 @@ const userSchema = new Schema({
         throw new Error("Password must be strong");
       }
     },
-  },
-  age: {
-    type: Number,
-    min: 18,
-  },
-  gender: {
-    type: String,
-  },
-  about: {
-    type: String,
-    trim: true,
-    maxlength: 500,
-    default: "No information provided.",
-  },
-  photoUrl: {
-    type: String,
-    trim: true,
-    default:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQIf4R5qPKHPNMyAqV-FjS_OTBB8pfUV29Phg&s",
-    validate() {
-      if (!validator.isURL(this.photoUrl)) {
-        throw new Error("Invalid URL format for photo");
-      }
-    },
-  },
+  }
 }, { timestamps: true });
+
+userSchema.methods.validatePassword = async function(password) {
+  const user = this;
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  return isPasswordValid;
+}
+
+userSchema.methods.getJWT = async function() {
+  const user = this;
+  const token = await jwt.sign({ id: user._id}, "WATCHESCO@123", { expiresIn: '1d' });
+  return token;
+}
 
 const User = mongoose.model("User", userSchema);
 
