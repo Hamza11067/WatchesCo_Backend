@@ -13,7 +13,7 @@ authRouter.post("/signup", async (req, res) => {
     const existngUser = await User.findOne({ email });
     if (existngUser) {
       return res.status(400).json({ message: "User already exists" });
-    }
+    } 
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
