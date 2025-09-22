@@ -1,15 +1,35 @@
 const express = require("express");
 const productRouter = express.Router();
 const Product = require("../models/Product");
+const upload = require("../middlewares/multer");
+const cloudinary = require("../config/cloudinary");
 
-productRouter.post("/addproduct", async (req, res) => {
+productRouter.post("/addproduct", upload.single("photo"), async (req, res) => {
   try {
-    const { name, description, price, photoUrl } = req.body;
-    const product = new Product({ name, description, price, photoUrl });
-    await product.save();
-    res
-      .status(201)
-      .json({ message: "Product added successfully", data: product });
+    const { name, description, price } = req.body;
+    let photoUrl = null;
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload_stream(
+        { folder: "products" },
+        async (error, result) => {
+          if (error) {
+            console.log("Cloudinary Upload Error:", error);
+            return res.status(500).json({ error: "Image upload failed" });
+          }
+          photoUrl = result.secure_url;
+          const product = new Product({ name, description, price, photoUrl });
+          await product.save();
+
+          res
+            .status(201)
+            .json({ message: "Product added successfully", data: product });
+        }
+      );
+      result.end(req.file.buffer);
+    } else {
+      return res.status(400).json({ error: "Product photo is required" });
+    }
   } catch (error) {
     console.log(error);
     res
