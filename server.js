@@ -14,9 +14,12 @@ app.use(cors({
 
 const userRoutes = require("./src/routes/userRoutes");
 const productRoutes = require("./src/routes/productRoutes");
+const cartRoutes = require("./src/routes/cartRoutes");
+
 
 app.use("/", userRoutes);
 app.use("/", productRoutes);
+app.use("/", cartRoutes);
 
 connectDB().then(() => {
   app.listen(3000, () => {
