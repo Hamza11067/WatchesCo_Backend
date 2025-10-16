@@ -42,7 +42,7 @@ const userSchema = new Schema({
       }
     },
   },
-  type: {
+  role: {
     type: String,
     enum: ["buyer", "admin"],
     default: "buyer",
