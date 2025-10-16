@@ -41,6 +41,11 @@ const userSchema = new Schema({
         throw new Error("Password must be strong");
       }
     },
+  },
+  type: {
+    type: String,
+    enum: ["buyer", "admin"],
+    default: "buyer",
   }
 }, { timestamps: true });
 
