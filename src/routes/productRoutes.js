@@ -71,4 +71,58 @@ productRouter.delete("/deleteproduct/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 })
+
+productRouter.patch("/editproduct/:id", upload.single("photo"), async (req, res) => {
+  try {
+    const { name, description, price } = req.body;
+    const { id } = req.params;
+
+    // Step 1: Find existing product
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Step 2: Update photo if a new one is uploaded
+    if (req.file) {
+      const uploadToCloudinary = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "products" },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          stream.end(req.file.buffer);
+        });
+
+      const result = await uploadToCloudinary();
+      product.photoUrl = result.secure_url;
+    }
+
+    // Step 3: Update text fields
+    if (name) product.name = name;
+    if (description) product.description = description;
+    if (price) product.price = price;
+
+    // Step 4: Save updated product
+    await product.save();
+
+    res.status(200).json({
+      message: "Product updated successfully",
+      data: product,
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    res.status(500).json({
+      error: "Failed to update product",
+      details: error.message,
+    });
+  }
+});
+
+export default productRouter;
+
+
 module.exports = productRouter;
